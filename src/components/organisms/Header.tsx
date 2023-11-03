@@ -39,7 +39,10 @@ const Header: React.FC<IProps> = ({
     <MainContainer>
       <FlexContainer>
         {isCheckbox && (
-          <Checkbox onChange={() => onChange("removeAll")} isChecked={true} />
+          <Checkbox
+            onChange={() => onChange("removeAll")}
+            is_checked={"true"}
+          />
         )}
         <Paragraph font_size="1.2rem" font_weight="500">
           {!isCheckbox

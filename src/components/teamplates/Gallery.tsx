@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../organisms/Header";
 import ImageCard from "../organisms/ImageCard";
+import PhotoUpload from "../atoms/PhotoUpload";
 
 const images = [
   "/images/image-1.webp",
@@ -24,19 +25,29 @@ const MainContainer = styled.main`
   flex-flow: column;
   background-color: #fff;
   border-radius: 10px;
-  min-height: 80px;
+  min-height: 94.5vh;
 `;
 
 const MainCard = styled.div`
   padding: 1rem;
   display: grid;
-  grid-template-columns: repeat(6, 250px);
-  grid-column-gap: 0.5rem;
-  grid-row-gap: 0.5rem;
+  grid-template-columns: repeat(6, 240px);
+  grid-column-gap: 1.75rem;
+  grid-row-gap: 1.75rem;
 
   .img-0 {
     grid-column: 1 / 3;
     grid-row: 1/3;
+  }
+
+  @media only screen and (min-width: 1440px) and (max-width: 1600px) {
+    grid-template-columns: repeat(6, 200px);
+  }
+  @media only screen and (min-width: 1280px) and (max-width: 1400px) {
+    grid-template-columns: repeat(6, 160px);
+  }
+  @media only screen and (max-width: 1200px) {
+    grid-template-columns: repeat(6, 100px);
   }
 `;
 
@@ -46,35 +57,34 @@ const FlexContainer = styled.div`
 `;
 
 const Gallery: React.FC = () => {
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [imageSources, setImageSources] = useState(images);
 
   const onImageSelectChange = (action: {
-    index: number;
+    img: string;
     whatToDo: "add" | "remove" | "removeAll";
   }) => {
-    const { index, whatToDo } = action;
+    const { img, whatToDo } = action;
     setSelectedItems((prev) =>
       whatToDo === "add"
-        ? [...prev, index]
+        ? [...prev, img]
         : whatToDo === "removeAll"
         ? []
-        : [...prev.filter((data) => data !== index)]
+        : [...prev.filter((data) => data !== img)]
     );
   };
 
   const onRemoveImages = () => {
     setImageSources((prev) =>
-      prev.filter((_img, idx) => !selectedItems.includes(idx))
+      prev.filter((img) => !selectedItems.includes(img))
     );
   };
 
-  const dragItem = React.useRef<number>();
-  const dragOverItem = React.useRef<number>();
+  const dragItem = React.useRef<string>();
+  const dragOverItem = React.useRef<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onDragEnd = (e: React.DragEvent<HTMLDivElement>, _index: number) => {
-    console.log("e:", e);
+  const onDragEnd = (_e: React.DragEvent<HTMLDivElement>, _index: number) => {
     handleSortImages();
   };
 
@@ -83,8 +93,11 @@ const Gallery: React.FC = () => {
       return;
 
     const tempImages = [...imageSources];
-    const draggedItemContents = tempImages.splice(dragItem?.current, 1)[0];
-    tempImages.splice(dragOverItem.current, 0, draggedItemContents);
+    const dragItemIndex = tempImages.indexOf(String(dragItem.current));
+    const dragOverItemIndex = tempImages.indexOf(String(dragOverItem.current));
+
+    const draggedItemContents = tempImages.splice(dragItemIndex, 1)[0];
+    tempImages.splice(dragOverItemIndex, 0, draggedItemContents);
     dragItem.current = undefined;
     dragOverItem.current = undefined;
 
@@ -95,7 +108,7 @@ const Gallery: React.FC = () => {
     <MainContainer>
       <Header
         onChange={(action) =>
-          onImageSelectChange({ index: -1, whatToDo: action })
+          onImageSelectChange({ img: "", whatToDo: action })
         }
         onRemoveImages={onRemoveImages}
         isCheckbox={!!selectedItems.length}
@@ -105,17 +118,18 @@ const Gallery: React.FC = () => {
         <MainCard>
           {imageSources.map((image, idx) => (
             <ImageCard
+              key={image}
               className={`img-${idx}`}
               dragItem={dragItem}
               dragOverItem={dragOverItem}
               draggable={true}
               onDragEnd={onDragEnd}
               onCheckboxChange={onImageSelectChange}
-              imgIndex={idx}
               imgSrc={image}
-              isChecked={selectedItems.includes(idx)}
+              is_checked={selectedItems.includes(image) ? "true" : "false"}
             />
           ))}
+          <PhotoUpload />
         </MainCard>
       </FlexContainer>
     </MainContainer>
